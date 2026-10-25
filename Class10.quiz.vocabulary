@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>कक्षा १० नेपाली शब्दार्थ क्विज (CDC २०८३ - स्मार्टबोर्ड)</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Mukta', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0b1329 0%, #1e1b4b 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Header Bar */
+    header {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .title-box h1 {
+      font-size: 26px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-box p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    /* Timer Widget with Circular/Bar Progress */
+    .timer-card {
+      background: #0f172a;
+      border: 2px solid #38bdf8;
+      border-radius: 14px;
+      padding: 6px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 140px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .timer-card.warning {
+      border-color: #ef4444;
+      animation: pulse-border 0.8s infinite alternate;
+    }
+
+    @keyframes pulse-border {
+      from { border-color: #ef4444; box-shadow: 0 0 5px #ef4444; }
+      to { border-color: #dc2626; box-shadow: 0 0 20px #ef4444; }
+    }
+
+    .timer-text {
+      font-size: 22px;
+      font-weight: 800;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-card.warning .timer-text {
+      color: #f87171;
+    }
+
+    .timer-progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      background: #38bdf8;
+      width: 100%;
+      transition: width 1s linear;
+    }
+
+    .timer-card.warning .timer-progress-bar {
+      background: #ef4444;
+    }
+
+    .pass-tag {
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1px 8px;
+      border-radius: 10px;
+      margin-top: 2px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
+    .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    .btn-pass { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
+    .btn-nav { background: #334155; color: #f8fafc; }
+    .btn-nav:hover { background: #475569; }
+
+    /* Direction Switcher Toggle */
+    .direction-toggle {
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .dir-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .dir-btn.active {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    /* Main Container Split */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Scoreboard */
+    .scoreboard {
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .scoreboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 10px;
+    }
+
+    .scoreboard-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .group-card {
+      background: #0f172a;
+      border-radius: 16px;
+      padding: 14px 16px;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .group-card.active-turn {
+      border-color: #38bdf8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+      transform: scale(1.02);
+    }
+
+    .group-card.active-turn::before {
+      content: 'पालो';
+      position: absolute;
+      top: -10px;
+      right: 14px;
+      background: #38bdf8;
+      color: #0f172a;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 1px 8px;
+      border-radius: 10px;
+    }
+
+    .group-a { border-left: 6px solid #ef4444; }
+    .group-b { border-left: 6px solid #3b82f6; }
+    .group-c { border-left: 6px solid #10b981; }
+    .group-d { border-left: 6px solid #f59e0b; }
+
+    .group-info h3 { font-size: 19px; font-weight: 700; }
+    .score-display { font-size: 26px; font-weight: 800; color: #f8fafc; }
+
+    .score-btn-group { display: flex; gap: 6px; }
+
+    .score-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-add { background: #10b981; color: white; }
+    .btn-sub { background: #ef4444; color: white; }
+
+    /* Quiz Area */
+    .quiz-area {
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .q-number { font-size: 22px; font-weight: 700; color: #94a3b8; }
+    
+    .turn-indicator {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 700;
+      border: 1px solid #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Cards */
+    .card-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .word-box {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 850px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .word-label { font-size: 18px; color: #94a3b8; margin-bottom: 8px; }
+    .word-text { font-size: 52px; font-weight: 800; color: #f1f5f9; }
+
+    .answer-box {
+      background: #1e293b;
+      border: 2px dashed #f43f5e;
+      border-radius: 20px;
+      padding: 24px 40px;
+      width: 100%;
+      max-width: 850px;
+      min-height: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .answer-box.revealed {
+      background: linear-gradient(135deg, #881337, #4c0519);
+      border-style: solid;
+      border-color: #fb7185;
+      box-shadow: 0 10px 25px rgba(244, 63, 94, 0.35);
+    }
+
+    .answer-placeholder {
+      font-size: 20px;
+      color: #fb7185;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .answer-text {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffe4e6;
+      display: none;
+    }
+
+    .answer-box.revealed .answer-placeholder { display: none; }
+    .answer-box.revealed .answer-text { display: block; }
+
+    /* Footer Controls */
+    .quiz-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-left, .footer-right { display: flex; gap: 12px; }
+
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+
+    /* Jump Grid Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border-radius: 24px;
+      padding: 30px;
+      max-width: 900px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 { font-size: 24px; color: #38bdf8; }
+    .close-btn { background: transparent; border: none; color: #94a3b8; font-size: 28px; cursor: pointer; }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+      gap: 10px;
+    }
+
+    .grid-item {
+      aspect-ratio: 1;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .grid-item:hover { background: #38bdf8; color: #0f172a; }
+    .grid-item.active { background: #f59e0b; color: #0f172a; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title-box">
+      <h1 contenteditable="true">कक्षा १० नेपाली शब्दार्थ क्विज (CDC २०८३)</h1>
+      <p contenteditable="true">स्मार्टबोर्ड समूह प्रतियोगिता (१०० प्रश्नहरू)</p>
+    </div>
+
+    <div class="header-controls">
+      <!-- Rotation Direction Toggle -->
+      <div class="direction-toggle">
+        <button class="dir-btn active" id="dir-cw" onclick="setDirection('cw')">
+          <i class="fa-solid fa-rotate-right"></i> घडी (A➔B➔C➔D)
+        </button>
+        <button class="dir-btn" id="dir-ccw" onclick="setDirection('ccw')">
+          <i class="fa-solid fa-rotate-left"></i> उल्टो (A➔D➔C➔B)
+        </button>
+      </div>
+
+      <!-- Pass & Auto Dynamic Timer Display -->
+      <div class="timer-card" id="timer-card">
+        <div class="timer-text">
+          <i class="fa-regular fa-clock"></i>
+          <span id="timer-display">००:३०</span>
+        </div>
+        <div class="pass-tag" id="pass-tag">सुरुवात (३० से.)</div>
+        <div class="timer-progress-bar" id="timer-progress"></div>
+      </div>
+
+      <button class="btn btn-primary" onclick="toggleTimer()"><i class="fa-solid fa-play" id="play-icon"></i> समय सुरु/रोक्नुहोस्</button>
+      <button class="btn btn-pass" onclick="handlePass()"><i class="fa-solid fa-share"></i> पास (Pass)</button>
+      <button class="btn btn-nav" onclick="toggleModal()"><i class="fa-solid fa-grid-2"></i> १०० तालिका</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left Sidebar: Scoreboard -->
+    <aside class="scoreboard">
+      <div class="scoreboard-header">
+        <span class="scoreboard-title" contenteditable="true">समूह अङ्क तालिका</span>
+        <button class="btn btn-warning" style="padding:4px 10px; font-size:12px;" onclick="resetScores()">रिसेट</button>
+      </div>
+      
+      <div class="group-card group-a active-turn" id="card-group-0">
+        <div class="group-info">
+          <h3 contenteditable="true" style="color:#ef4444;">समूह 'क'</h3>
+          <div class="score-display" id="score-0">०</div>
+        </div>
+        <div class="score-btn-group">
+          <button class="score-btn btn-add" onclick="updateScore(0, 10)">+</button>
+          <button class="score-btn btn-sub" onclick="updateScore(0, -5)">-</button>
+        </div>
+      </div>
+
+      <div class="group-card group-b" id="card-group-1">
+        <div class="group-info">
+          <h3 contenteditable="true" style="color:#3b82f6;">समूह 'ख'</h3>
+          <div class="score-display" id="score-1">०</div>
+        </div>
+        <div class="score-btn-group">
+          <button class="score-btn btn-add" onclick="updateScore(1, 10)">+</button>
+          <button class="score-btn btn-sub" onclick="updateScore(1, -5)">-</button>
+        </div>
+      </div>
+
+      <div class="group-card group-c" id="card-group-2">
+        <div class="group-info">
+          <h3 contenteditable="true" style="color:#10b981;">समूह 'ग'</h3>
+          <div class="score-display" id="score-2">०</div>
+        </div>
+        <div class="score-btn-group">
+          <button class="score-btn btn-add" onclick="updateScore(2, 10)">+</button>
+          <button class="score-btn btn-sub" onclick="updateScore(2, -5)">-</button>
+        </div>
+      </div>
+
+      <div class="group-card group-d" id="card-group-3">
+        <div class="group-info">
+          <h3 contenteditable="true" style="color:#f59e0b;">समूह 'घ'</h3>
+          <div class="score-display" id="score-3">०</div>
+        </div>
+        <div class="score-btn-group">
+          <button class="score-btn btn-add" onclick="updateScore(3, 10)">+</button>
+          <button class="score-btn btn-sub" onclick="updateScore(3, -5)">-</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:auto;" onclick="manualTurnSwitch()">
+        <i class="fa-solid fa-arrows-rotate"></i> म्यानुअल पालो बदल्नुहोस्
+      </button>
+    </aside>
+
+    <!-- Quiz Main Card Section -->
+    <section class="quiz-area">
+      <div class="quiz-header">
+        <div class="q-number" id="q-counter">प्रश्न १ / १००</div>
+        <div class="turn-indicator" id="turn-label">
+          <i class="fa-solid fa-users"></i> पालो: समूह 'क'
+        </div>
+      </div>
+
+      <div class="card-container">
+        <!-- Word Card -->
+        <div class="word-box">
+          <div class="word-label" contenteditable="true">कठिन शब्द:</div>
+          <div class="word-text" id="question-word" contenteditable="true">अमूर्त</div>
+        </div>
+
+        <!-- Hidden Answer Box -->
+        <div class="answer-box" id="answer-box" onclick="revealAnswer()">
+          <div class="answer-placeholder">
+            <i class="fa-solid fa-eye"></i> रातो अक्षरमा दिइएको अर्थ हेर्न यहाँ क्लिक/ट्याप गर्नुहोस्
+          </div>
+          <div class="answer-text" id="answer-text" contenteditable="true">
+            देख्न वा छुन नसकिने / आकार नभएको
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz-footer">
+        <div class="footer-left">
+          <button class="btn btn-nav" onclick="prevQuestion()"><i class="fa-solid fa-chevron-left"></i> अघिल्लो</button>
+          <button class="btn btn-nav" onclick="nextQuestion()">पछिल्लो <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="footer-right">
+          <button class="btn btn-danger" onclick="markWrong()"><i class="fa-solid fa-xmark"></i> बिग्रियो (०)</button>
+          <button class="btn btn-success" onclick="markCorrect()"><i class="fa-solid fa-check"></i> मिल्यो (+१०)</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Jump Question Grid Modal -->
+  <div class="modal-overlay" id="grid-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>सबै १०० प्रश्नहरू छान्नुहोस्</h2>
+        <button class="close-btn" onclick="toggleModal()">&times;</button>
+      </div>
+      <div class="grid-container" id="grid-container"></div>
+    </div>
+  </div>
+
+  <script>
+    // 100 Grade 10 CDC Nepali Vocabulary Questions
+    const quizData = [
+      { w: "अमूर्त", a: "देख्न वा छुन नसकिने / आकार नभएको" },
+      { w: "कुदृष्टि", a: "नराम्रो नजर वा खराब दृष्टि" },
+      { w: "जिजीविषा", a: "बाँच्ने तीव्र इच्छा" },
+      { w: "तपस्वी", a: "तपस्या गर्ने व्यक्ति वा साधु" },
+      { w: "निस्पृह", a: "कुनै पनि कुराको आस वा लोभ नभएको" },
+      { w: "प्रतिकूल", a: "अनुकूल नभएको / विपरित वा बिरूद्ध" },
+      { w: "महत्वाकांक्षा", a: "ठूलो आशा, उच्च इच्छा वा चाहना" },
+      { w: "विविधता", a: "अनेक किसिमकोपन / विभिन्नता" },
+      { w: "शब्दातीत", a: "शब्दले वर्णन गर्न नसकिने / शब्दभन्दा परेको" },
+      { w: "सङ्कल्प", a: "कुनै काम गर्ने पक्का अटो / दृढ प्रतिज्ञा" },
+      { w: "अनायासै", a: "अचानक वा एक्कासि" },
+      { w: "अपरिहार्य", a: "छोड्नै नमिल्ने / ज्यादै आवश्यक" },
+      { w: "अभ्युदय", a: "उन्नति वा प्रगति" },
+      { w: "आत्मीयता", a: "आफ्नैपन वा घनिष्ठता" },
+      { w: "उत्कण्ठा", a: "तीव्र इच्छा वा उत्सुकता" },
+      { w: "उदात्त", a: "महान् वा उच्च विचार भएको" },
+      { w: "औचित्य", a: "उपयुक्तता वा मनासिब हुनाको भाव" },
+      { w: "कदापि", a: "कहिल्यै पनि" },
+      { w: "कीर्तिमान", a: "रेकर्ड वा उच्च सफलता" },
+      { w: "क्षितिज", a: "आकाश र पृथ्वी जोडिएको जस्तो देखिने ठाउँ" },
+      { w: "गन्तव्य", a: "पुग्नुपर्ने ठाउँ वा लक्ष्य" },
+      { w: "गहन", a: "गहिरो वा गम्भीर" },
+      { w: "चैतन्य", a: "चेतना वा ज्ञान" },
+      { w: "चेतना", a: "बुद्धि वा बोध शक्ति" },
+      { w: "जटिलता", a: "अप्ठ्यारोपन वा गाह्रो अवस्था" },
+      { w: "जिज्ञासा", a: "जान्ने वा सिक्ने इच्छा" },
+      { w: "तटस्थ", a: "निष्पक्ष वा तटमा बस्ने" },
+      { w: "तल्लीन", a: "मग्न वा एकचित्त भएको" },
+      { w: "दुर्लभ", a: "सजिलै नपाइने / कठिनताले पाइने" },
+      { w: "दृढता", a: "अटलपन वा मजबुती" },
+      { w: "धरोहर", a: "अमानत वा ऐतिहासिक सम्पदा" },
+      { w: "धारणा", a: "विचार वा मान्यता" },
+      { w: "निरन्तरता", a: "नरोकिई अघि बढ्ने क्रम" },
+      { w: "निश्चल", a: "छल नभएको वा स्थिर" },
+      { w: "प्रतिबद्धता", a: "वचनबद्धता वा लगनशीलता" },
+      { w: "प्रतिभा", a: "विलक्षण बुद्धि वा क्षमता" },
+      { w: "प्रगाढ", a: "अत्यन्त गहिरो वा बाक्लो" },
+      { w: "प्रारूप", a: "ढाँचा वा नमुना" },
+      { w: "प्रेरणा", a: "उत्साह वा जोस दिने काम" },
+      { w: "बलिदान", a: "देश वा समाजका लागि प्राण त्याग्ने कार्य" },
+      { w: "बहुआयामिक", a: "धेरै पक्ष वा पाटा भएको" },
+      { w: "बोध", a: "ज्ञान वा बुझाइ" },
+      { w: "भगीरथ", a: "अत्यन्त कठिन प्रयत्न गर्ने" },
+      { w: "मर्म", a: "भित्री रहस्य वा वास्तविक अर्थ" },
+      { w: "महिमा", a: "बडापन वा गौरव" },
+      { w: "यथार्थ", a: "वास्तविकता वा सक्कली रूप" },
+      { w: "यात्रा", a: "भ्रमण वा अघि बढ्ने कार्य" },
+      { w: "रुपान्तरण", a: "एउटा रूपबाट अर्को रूपमा परिवर्तन" },
+      { w: "लक्षित", a: "लक्ष्य बनाइएको" },
+      { w: "विलक्षण", a: "असाधारण वा अनौठो गुण भएको" },
+      { w: "विरासत", a: "पुर्खाबाट प्राप्त सम्पत्ति वा परम्परा" },
+      { w: "वैचारिकी", a: "विचारधारा वा दर्शन" },
+      { w: "व्यापकता", a: "ठूलो फैलावट वा विस्तार" },
+      { w: "शाश्वत", a: "सधैँ रहिरहने / अमर" },
+      { w: "सद्भाव", a: "राम्रो भावना वा मेलमिलाप" },
+      { w: "समर्पण", a: "पूर्ण रूपमा सुम्पिने कार्य" },
+      { w: "समष्टि", a: "समूह वा समग्र रूप" },
+      { w: "समृद्धि", a: "उन्नति, प्रगति वा सम्पन्नता" },
+      { w: "सहअस्तित्व", a: "सँगै बाँच्ने वा मिलेर बस्ने भाव" },
+      { w: "साझा", a: "सबैको हक वा स्वामित्व भएको" },
+      { w: "सार्थक", a: "अर्थपूर्ण वा उपयोगी" },
+      { w: "सिर्जना", a: "रचना वा निर्माण" },
+      { w: "सौन्दर्य", a: "सुन्दरता वा शोभा" },
+      { w: "स्वाभिमान", a: "आफ्नो इज्जत वा आत्मसम्मान" },
+      { w: "हार्दिकता", a: "हृदयदेखिको माया वा आत्मीयता" },
+      { w: "अग्निपरीक्षा", a: "कठिन जाँच वा कसौटी" },
+      { w: "अग्रगामी", a: "अघि बढ्ने वा प्रगतिशील" },
+      { w: "अतुलनीय", a: "तुुलना गर्न नसकिने" },
+      { w: "अनुभूति", a: "महसुस वा अनुभव" },
+      { w: "अभिनव", a: "अत्यन्त नयाँ वा नौलो" },
+      { w: "अभियान", a: "कुनै विशेष उद्देश्यका लागि गरिने यात्रा/कार्य" },
+      { w: "अविचलित", a: "डामाडोल नहुने / स्थिर" },
+      { w: "असीम", a: "सीमा नभएको / असीमित" },
+      { w: "आत्मनिर्भरता", a: "आफैँमा निर्भर हुने अवस्था" },
+      { w: "आदर्श", a: "अनुकरण गर्न योग्य / उत्तम नमुना" },
+      { w: "उन्मुख", a: "तर्फ फर्केको वा अघि बढेको" },
+      { w: "उत्कृष्टता", a: "श्रेष्ठता वा अत्यन्त राम्रोपन" },
+      { w: "एकता", a: "मेलमिलाप वा एकजुटता" },
+      { w: "करुणा", a: "दया वा सहानुभूति" },
+      { w: "कारोबार", a: "लेनदेन वा व्यापार" },
+      { w: "कृतज्ञता", a: "उपकार मान्ने भाव" },
+      { w: "गौरव", a: "मान, इज्जत वा घमण्ड" },
+      { w: "गतिशीलता", a: "निरन्तर अघि बढ्ने गुण" },
+      { w: "चेत", a: "होस वा चेतना" },
+      { w: "जागरुकता", a: "सचेत हुने अवस्था" },
+      { w: "तार्किकता", a: "युक्ति वा तर्कपूर्ण हुनाको भाव" },
+      { w: "दृष्टिकोण", a: "हेर्ने वा सोच्ने विचार" },
+      { w: "निष्ठा", a: "इमानदारी वा श्रद्धा" },
+      { w: "परम्परा", a: "पहिल्यैदेखि चलिआएको चलन" },
+      { w: "परिणाम", a: "नतिजा वा फल" },
+      { w: "पुनर्जागरण", a: "पुनः ब्युँझिने वा नयाँ युगको सुरुवात" },
+      { w: "प्रतिक्रिया", a: "घटनापछिको उत्तर वा असर" },
+      { w: "प्रतिष्ठा", a: "इज्जत, मान वा प्रसिद्धि" },
+      { w: "प्रभावी", a: "असर पार्ने वा शक्तिशाली" },
+      { w: "मालिक", a: "धनी वा स्वामी" },
+      { w: "मूल्यमान्यता", a: "सामाजिक संस्कार र सिद्धान्त" },
+      { w: "युगान्तकारी", a: "नयाँ युग ल्याउने वा ठूलो परिवर्तन गर्ने" },
+      { w: "सक्रियता", a: "जाँगर वा निरन्तर लागिपर्ने गुण" },
+      { w: "सदाचार", a: "असल चालचलन वा व्यवहार" },
+      { w: "स्वावलम्बन", a: "आफ्नो गोडामा आफैँ उभिने कार्य" }
+    ];
+
+    // State Variables
+    let currentQ = 0;
+    let currentTurn = 0; // 0: A, 1: B, 2: C, 3: D
+    let passCount = 0; // 0: Main (30s), 1: Pass 1 (15s), 2+: Pass 2+ (10s)
+    let rotationDir = 'cw'; // 'cw' = Clockwise, 'ccw' = Anti-clockwise
+    let scores = [0, 0, 0, 0];
+
+    let totalDuration = 30;
+    let timeLeft = 30;
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    const groupNames = ["समूह 'क'", "समूह 'ख'", "समूह 'ग'", "समूह 'घ'"];
+    const nepaliNumbers = ['०','१','२','३','४','५','६','७','८','९'];
+
+    function toNepaliNum(num) {
+      return num.toString().split('').map(d => nepaliNumbers[d] || d).join('');
+    }
+
+    // Load Question into UI
+    function loadQuestion(index) {
+      currentQ = index;
+      passCount = 0;
+      const q = quizData[index];
+      
+      document.getElementById('q-counter').innerText = `प्रश्न ${toNepaliNum(index + 1)} / १००`;
+      document.getElementById('question-word').innerText = q.w;
+      document.getElementById('answer-text').innerText = q.a;
+      
+      const answerBox = document.getElementById('answer-box');
+      answerBox.classList.remove('revealed');
+
+      setupTimerForCurrentState();
+      updateGridHighlights();
+    }
+
+    // Timer Logic with Dynamic Rules (30s -> 15s -> 10s)
+    function setupTimerForCurrentState() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      document.getElementById('play-icon').className = "fa-solid fa-play";
+
+      if (passCount === 0) {
+        totalDuration = 30;
+        document.getElementById('pass-tag').innerText = "मुख्य पालो (३० से.)";
+      } else if (passCount === 1) {
+        totalDuration = 15;
+        document.getElementById('pass-tag').innerText = "पहिलो पास (१५ से.)";
+      } else {
+        totalDuration = 10;
+        document.getElementById('pass-tag').innerText = `पास ${toNepaliNum(passCount)} (१० से.)`;
+      }
+
+      timeLeft = totalDuration;
+      updateTimerDisplay();
+      startTimer(); // Auto start timer on question load or pass
+    }
+
+    function toggleTimer() {
+      if (isTimerRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (isTimerRunning) return;
+      isTimerRunning = true;
+      document.getElementById('play-icon').className = "fa-solid fa-pause";
+
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateTimerDisplay();
+        } else {
+          pauseTimer();
+          // Auto Pass or Alert on Time Out
+          document.getElementById('timer-card').classList.add('warning');
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      document.getElementById('play-icon').className = "fa-solid fa-play";
+    }
+
+    function updateTimerDisplay() {
+      const sec = timeLeft < 10 ? `०${toNepaliNum(timeLeft)}` : toNepaliNum(timeLeft);
+      document.getElementById('timer-display').innerText = `००:${sec}`;
+
+      // Progress bar percentage
+      const pct = (timeLeft / totalDuration) * 100;
+      document.getElementById('timer-progress').style.width = `${pct}%`;
+
+      // Warning glow below 5 sec
+      const card = document.getElementById('timer-card');
+      if (timeLeft <= 5 && timeLeft > 0) {
+        card.classList.add('warning');
+      } else if (timeLeft > 5) {
+        card.classList.remove('warning');
+      }
+    }
+
+    // Direction Switcher
+    function setDirection(dir) {
+      rotationDir = dir;
+      document.getElementById('dir-cw').classList.toggle('active', dir === 'cw');
+      document.getElementById('dir-ccw').classList.toggle('active', dir === 'ccw');
+    }
+
+    // Calculate Next Turn based on Clockwise / Anti-clockwise
+    function getNextTeamIndex(curr) {
+      if (rotationDir === 'cw') {
+        return (curr + 1) % 4; // A -> B -> C -> D
+      } else {
+        return (curr + 3) % 4; // A -> D -> C -> B
+      }
+    }
+
+    // Turn Switch Logic
+    function setActiveTurn(newTurnIndex) {
+      document.getElementById(`card-group-${currentTurn}`).classList.remove('active-turn');
+      currentTurn = newTurnIndex;
+      document.getElementById(`card-group-${currentTurn}`).classList.add('active-turn');
+      document.getElementById('turn-label').innerHTML = `<i class="fa-solid fa-users"></i> पालो: ${groupNames[currentTurn]}`;
+    }
+
+    function manualTurnSwitch() {
+      const nextIdx = getNextTeamIndex(currentTurn);
+      setActiveTurn(nextIdx);
+      passCount = 0;
+      setupTimerForCurrentState();
+    }
+
+    // Pass Question Action
+    function handlePass() {
+      passCount++;
+      const nextIdx = getNextTeamIndex(currentTurn);
+      setActiveTurn(nextIdx);
+      setupTimerForCurrentState();
+    }
+
+    // Scoring & Answers
+    function updateScore(groupIndex, points) {
+      scores[groupIndex] += points;
+      document.getElementById(`score-${groupIndex}`).innerText = toNepaliNum(scores[groupIndex]);
+    }
+
+    function resetScores() {
+      scores = [0, 0, 0, 0];
+      for(let i=0; i<4; i++) {
+        document.getElementById(`score-${i}`).innerText = '०';
+      }
+    }
+
+    function revealAnswer() {
+      document.getElementById('answer-box').classList.add('revealed');
+    }
+
+    function markCorrect() {
+      revealAnswer();
+      pauseTimer();
+      updateScore(currentTurn, 10);
+      confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 } });
+      setTimeout(() => {
+        const nextIdx = getNextTeamIndex(currentTurn);
+        setActiveTurn(nextIdx);
+        nextQuestion();
+      }, 1600);
+    }
+
+    function markWrong() {
+      revealAnswer();
+      pauseTimer();
+      setTimeout(() => {
+        const nextIdx = getNextTeamIndex(currentTurn);
+        setActiveTurn(nextIdx);
+        nextQuestion();
+      }, 1600);
+    }
+
+    function nextQuestion() {
+      if (currentQ < quizData.length - 1) {
+        loadQuestion(currentQ + 1);
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQ > 0) {
+        loadQuestion(currentQ - 1);
+      }
+    }
+
+    // Modal Builder
+    function toggleModal() {
+      const modal = document.getElementById('grid-modal');
+      modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function buildGrid() {
+      const container = document.getElementById('grid-container');
+      container.innerHTML = '';
+      quizData.forEach((item, idx) => {
+        const btn = document.createElement('div');
+        btn.className = `grid-item ${idx === currentQ ? 'active' : ''}`;
+        btn.innerText = toNepaliNum(idx + 1);
+        btn.onclick = () => {
+          loadQuestion(idx);
+          toggleModal();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function updateGridHighlights() {
+      const items = document.querySelectorAll('.grid-item');
+      items.forEach((item, idx) => {
+        if (idx === currentQ) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    // Start App
+    buildGrid();
+    loadQuestion(0);
+  </script>
+</body>
+</html>
+```eof
+
+### थप गरिएका विशेषताहरू (Features Added):
+1. **अटो टाइमर तथा पास (Pass) नियम**:
+   - **सुरुवाती पालो:** ३० सेकेन्डको घडी स्वतः सुरु हुन्छ।
+   - **पहिलो पास (1st Pass):** `पास (Pass)` बटन थिच्दा अङ्क नघटी अर्को समूहको पालो आउँछ र घडी **१५ सेकेन्ड**मा रिसेट भएर चल्छ।
+   - **दोस्रो र बाँकी पास (2nd Pass+):** पुनः पास गर्दा घडी **१० सेकेन्ड**मा रिसेट हुन्छ।
+
+2. **घडीको दिशा / उल्टो दिशा (Clockwise & Anti-clockwise Rotation)**:
+   - माथि हेडरमा रहेको स्विचरबाट `घडी (A ➔ B ➔ C ➔ D)` वा `उल्टो (A ➔ D ➔ C ➔ B)` दिशा रोज्न सकिन्छ। पास गर्दा वा प्रश्न मिलाउँदा स्वतः सोही दिशा अनुसार अर्को टोलीको पालो आउँछ।
+
+3. **स्मार्टबोर्डका लागि सजिलो र स्पष्ट डिजाइन**:
+   - बाँकी ५ सेकेन्ड हुँदा टाइमर बक्स रातो भएर घण्टी/वार्निङ संकेत देखा पर्छ।
+   - उत्तर बक्समा क्लिक गर्दा मात्र रातो ब्याकग्राउन्डमा उत्तर देखा पर्छ।
